@@ -1,0 +1,19 @@
+#version 430
+
+layout(location = 1) in vec3 color;
+
+out vec4 FragColor;
+out vec3 Color;
+
+in vec2 TexCoord;
+in vec3 FragPos;
+
+uniform sampler2D ourTexture;
+uniform vec3 lightColor;
+
+void main()
+{
+	Color = color;
+	FragColor = texture(ourTexture, TexCoord) * vec4(1.0, 1.0, 1.0, 1.0);
+	//FragColor = vec4(lightColor, 1.0f);
+};

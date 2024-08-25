@@ -1,0 +1,72 @@
+#version 430
+out vec4 FragColor;
+
+in vec2 TexCoord;
+
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+uniform sampler2D gAlbedoSpec;
+
+uniform sampler2D normalMap;
+uniform vec3 viewPos;
+
+struct Material {
+	float shininess;
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+uniform Material material;
+
+struct PointLight {
+	vec3 pos;
+	vec3 color;
+	float intensity;
+	
+	float constant;
+	float linear;
+	float quadratic;
+};
+const int NR_POINT_LIGHTS = 4;
+uniform PointLight lights[NR_POINT_LIGHTS];
+
+vec3 objectColor = vec3(1.0f, 1.0f, 1.0f);
+
+void main()
+{
+	vec3 FragPos = texture(gPosition, TexCoord).rgb;
+	vec3 Normal = texture(gNormal, TexCoord).rgb;
+	vec3 Albedo = texture(gAlbedoSpec, TexCoord).rgb;
+	float Specular = texture(gAlbedoSpec, TexCoord).a;
+	
+	vec3 result;
+	vec3 viewDir = normalize(viewPos - FragPos);
+	for(int i = 0; i < NR_POINT_LIGHTS; i++) {
+	//Ambient light
+		vec3 ambient = lights[i].intensity * lights[i].color;
+
+	//Diffuse light
+		vec3 lightDir = normalize(lights[i].pos - FragPos);
+		// float diff = max(dot(Normal, lightDir), 0.0f);
+		// vec3 diffuse = diff * lights[i].color;
+		vec3 diffuse = max(dot(Normal, lightDir), 0.0f) * Albedo * lights[i].intensity * lights[i].color;
+
+	//Specular light
+		//vec3 reflectDir = reflect(-lightDir, Normal);
+	
+	//Blinn phong
+		vec3 halfwayDir = normalize(lightDir + viewDir);
+		float spec = pow(max(dot(Normal, halfwayDir), 0.0), (material.shininess * 4));
+		vec3 specular = lights[i].intensity * lights[i].color * spec * Specular;
+	
+	//Result
+		float distance = length(lights[i].pos - FragPos);
+		float attenuation = 1.0 / (lights[i].constant + lights[i].linear * distance + lights[i].quadratic * (distance * distance));
+		ambient *= attenuation;
+		diffuse *= attenuation;
+		specular *= attenuation;
+		result += (ambient + diffuse + specular);     
+	}
+	
+	FragColor = texture(gAlbedoSpec, TexCoord) * vec4(result, 1.0);
+};
