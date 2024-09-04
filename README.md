@@ -1,4 +1,4 @@
-# To do List:
+# To do list:
   * Debugging issues with deffered shading and then its full implementation.
   * Refactoring code.
   * Controllable camera.
