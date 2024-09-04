@@ -1,9 +1,9 @@
 # WIP List:
   * Debugging issues with deffered shading and then its full implementation.
   * Refactoring code.
-  * Rendering loop contains bloated code from testing (commented out lines).
   * Controllable camera.
   * Possible runtime errors.
+  * Rendering loop contains bloated code from testing (commented out lines). Will be cleaned up after previous mentioned topics have been solved.
 
 # lab-env
 C++11 based application base for developing apps.
