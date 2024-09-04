@@ -1,6 +1,7 @@
 # WIP List:
   * Debugging issues with deffered shading and then its full implementation.
   * Refactoring code.
+  * Rendering loop contains bloated code from testing (commented out lines).
   * Controllable camera.
   * Possible runtime errors.
 
