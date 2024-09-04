@@ -1,4 +1,4 @@
-# WIP List:
+# To do List:
   * Debugging issues with deffered shading and then its full implementation.
   * Refactoring code.
   * Controllable camera.
