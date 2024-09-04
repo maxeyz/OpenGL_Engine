@@ -1,3 +1,9 @@
+# WIP List:
+  * Debugging issues with deffered shading and then its full implementation.
+  * Refactoring code.
+  * Controllable camera.
+  * Possible runtime errors.
+
 # lab-env
 C++11 based application base for developing apps.
 
