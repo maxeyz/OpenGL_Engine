@@ -4,6 +4,7 @@
   * Implement a controllable camera.
   * Fix possible runtime errors.
   * Rendering loop contains bloated code from testing (commented out lines). Will be cleaned up after previous mentioned topics have been solved.
+  * Material application.
 
 # lab-env
 C++11 based application base for developing apps.
