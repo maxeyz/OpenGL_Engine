@@ -21,46 +21,46 @@
 class MeshResource {
 public:
 	struct Primitive {
-		GLuint VAO;
-		GLuint nrIndices;
-		GLuint byteOffset;
-		GLenum indexType;
-		Material material;
+		GLuint m_VAO;
+		GLuint m_nrIndices;
+		GLuint m_byteOffset;
+		GLenum m_indexType;
+		Material m_material;
 	};
 
 	struct Attribute {
-		GLuint slot;
-		GLint components;
-		GLenum type = GL_NONE;
-		GLsizei stride;
-		GLsizei byteOffset;
-		GLboolean normalized = GL_FALSE;
+		GLuint m_slot;
+		GLint m_components;
+		GLenum m_type = GL_NONE;
+		GLsizei m_stride;
+		GLsizei m_byteOffset;
+		GLboolean m_normalized = GL_FALSE;
 	};
 
 	struct Vertex {
-		vec3 position;
-		vec3 color;
-		vec2 texCoord;
-		vec3 normal;
+		vec3 m_position;
+		vec3 m_color;
+		vec2 m_texCoord;
+		vec3 m_normal;
 
-		Vertex(vec3 position, vec3 color, vec2 texCoord, vec3 normal) {
-			this->position = position;
-			this->color = color;
-			this->texCoord = texCoord;
-			this->normal = normal;
+		Vertex(vec3 pos, vec3 col, vec2 textCoord, vec3 normal) {
+			m_position = pos;
+			m_color = col;
+			m_texCoord = textCoord;
+			m_normal = normal;
 		}
 	};
 
-	GLuint VAO;
-	GLuint VBO;
-	GLuint EBO;
+	GLuint m_VAO;
+	GLuint m_VBO;
+	GLuint m_EBO;
 	
-	std::vector<Primitive> primitives;
+	std::vector<Primitive> m_primitives;
 
-	MeshResource();
+	MeshResource() {};
 	MeshResource(std::vector<Vertex> vertexVec, const unsigned& nrOfVertices, std::vector<GLuint> indexVec, const unsigned& nrOfIndices);
 	MeshResource(std::vector<Vertex> vertexVec, std::vector<GLuint> indexVec, std::vector<TextureResource> textures);
-	~MeshResource();
+	~MeshResource() {};
 
 	// Quad
 	void DrawQuad(); //old
@@ -84,49 +84,49 @@ public:
 	MeshResource CreateOBJMesh();
 
 private:
-	std::vector<Vertex> vertices;
-	std::vector<GLuint> indices;
-	std::vector<TextureResource> textures;
+	std::vector<Vertex> m_vertices;
+	std::vector<GLuint> m_indices;
+	std::vector<TextureResource> m_textures;
 
 	void InitVertexData(std::vector<Vertex> vertexVec, const unsigned& nrOfVertices, std::vector<GLuint> indexVec, const unsigned& nrOfIndices) {
 		for (size_t i = 0; i < nrOfVertices; i++) {
-			this->vertices.push_back(vertexVec[i]);
+			this->m_vertices.push_back(vertexVec[i]);
 		}
 
 		for (size_t i = 0; i < nrOfIndices; i++) {
-			this->indices.push_back(indexVec[i]);
+			this->m_indices.push_back(indexVec[i]);
 		}
 	}
 
 	void InitVAO() {
-		glCreateVertexArrays(1, &this->VAO);
-		glBindVertexArray(this->VAO);
+		glCreateVertexArrays(1, &this->m_VAO);
+		glBindVertexArray(this->m_VAO);
 
 		// Generate VBO, bind and send data
-		glGenBuffers(1, &VBO);
-		glBindBuffer(GL_ARRAY_BUFFER, this->VBO);
-		glBufferData(GL_ARRAY_BUFFER, this->vertices.size() * sizeof(Vertex), this->vertices.data(), GL_STATIC_DRAW);
+		glGenBuffers(1, &m_VBO);
+		glBindBuffer(GL_ARRAY_BUFFER, this->m_VBO);
+		glBufferData(GL_ARRAY_BUFFER, this->m_vertices.size() * sizeof(Vertex), this->m_vertices.data(), GL_STATIC_DRAW);
 
 		// Generate EBO, bind and send data
-		glGenBuffers(1, &this->EBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->indices.size() * sizeof(GLuint), this->indices.data(), GL_STATIC_DRAW);
+		glGenBuffers(1, &this->m_EBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->m_EBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, this->m_indices.size() * sizeof(GLuint), this->m_indices.data(), GL_STATIC_DRAW);
 
 		// Set VertexAttribPointers and enable
 		// Position
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, position));
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_position));
 		glEnableVertexAttribArray(0);
 
 		// Color
-		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, color));
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_color));
 		glEnableVertexAttribArray(1);
 
 		// Texcoord
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoord));
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_texCoord));
 		glEnableVertexAttribArray(2);
 
 		// Normal
-		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_normal));
 		glEnableVertexAttribArray(3);
 
 		// Unbind VAO

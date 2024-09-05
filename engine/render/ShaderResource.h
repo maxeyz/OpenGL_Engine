@@ -17,10 +17,10 @@ class LightingResource;
 
 class ShaderResource {
 public:
-	GLuint program;
+	GLuint m_program;
 
-	ShaderResource();
-	~ShaderResource();
+	ShaderResource() {};
+	~ShaderResource() {};
 	void LoadShaders(const char* vertexPath, const char* fragmentPath);
 	void Run();
 	static void SendAllLightUniformsToShader(ShaderResource shader, LightingResource directionalLight, std::vector<LightingResource> pointLight);

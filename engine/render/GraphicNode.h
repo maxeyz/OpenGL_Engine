@@ -9,21 +9,19 @@
 
 class GraphicNode {
 public:
-	std::shared_ptr<MeshResource> mesh;
-	std::shared_ptr<TextureResource> texture;
-	std::shared_ptr<ShaderResource> shader;
-	mat4 transform;
-	GLTF model;
+	mat4 m_transform;
+	GLTF m_model;
+	std::shared_ptr<MeshResource> m_mesh;
+	std::shared_ptr<TextureResource> m_texture;
+	std::shared_ptr<ShaderResource> m_shader;
 
-	GraphicNode();
-	~GraphicNode();
+	GraphicNode() :
+		m_mesh(std::make_shared<MeshResource>()),
+		m_texture(std::make_shared<TextureResource>()),
+		m_shader(std::make_shared<ShaderResource>()) {}
+	~GraphicNode() {};
 
-	void Draw(Display::Window* window, GLuint method);
-	void Draw(Display::Window* window, GLuint method, std::shared_ptr<ShaderResource> shader);
-
-	// GLTF exclusive
-	void Draw(Display::Window* window);
-	void Draw(Display::Window* window, std::shared_ptr<ShaderResource> shader);
+	void GraphicNode::Draw(Display::Window* window, std::shared_ptr<ShaderResource> m_shader = nullptr, GLuint method = GL_TRIANGLES, bool hasPrimitives = false);
 
 	void OrbitAnimation();
 };

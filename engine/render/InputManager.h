@@ -15,7 +15,8 @@ namespace Input2
         Q,
         E,
         LEFT_CLICK,
-        NUM_KEYS,
+        ESCAPE,
+        NUM_KEYS
     };
 
     inline Keycode GetKeyCodeFromGLFW(int32 glfwKey)
@@ -29,13 +30,12 @@ namespace Input2
         case GLFW_KEY_D: return Keycode::RIGHT;
         case GLFW_KEY_Q: return Keycode::Q;
         case GLFW_KEY_E: return Keycode::E;
+        case GLFW_KEY_ESCAPE: return Keycode::ESCAPE;
         case GLFW_MOUSE_BUTTON_LEFT: return Keycode::LEFT_CLICK;
         default:
             printf("INVALID KEYCODE\n");
-            //assert(false);
             break;
         }
-        return Keycode::SPACE;
     }
 
     struct Keyboard

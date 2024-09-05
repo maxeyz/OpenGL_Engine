@@ -3,23 +3,15 @@
 #include <cstring>
 
 MeshResource::MeshResource(std::vector<Vertex> vertexVec, const unsigned& nrOfVertices, std::vector<GLuint> indexVec, const unsigned& nrOfIndices) {
-	this->InitVertexData(vertexVec, nrOfVertices, indexVec, nrOfIndices);
-	this->InitVAO();
+	InitVertexData(vertexVec, nrOfVertices, indexVec, nrOfIndices);
+	InitVAO();
 }
 
 MeshResource::MeshResource(std::vector<Vertex> vertexVec, std::vector<GLuint> indexVec, std::vector<TextureResource> textures) {
-	this->vertices = vertexVec;
-	this->indices = indexVec;
-	this->textures = textures;
-	this->InitVAO();
-}
-
-MeshResource::MeshResource() {
-
-}
-
-MeshResource::~MeshResource() {
-	// empty
+	m_vertices = vertexVec;
+	m_indices = indexVec;
+	m_textures = textures;
+	InitVAO();
 }
 
 MeshResource MeshResource::CreateQuadMesh() {
@@ -188,7 +180,7 @@ bool MeshResource::ReadOBJFile(const char* path) {
 				std::string normal = std::to_string(normalIndex[i]);
 				std::string face = vertex + "/" + uv + "/" + normal;
 				if (vertexMap.count(face)) {
-					this->indices.push_back(vertexMap[face]);
+					m_indices.push_back(vertexMap[face]);
 				}
 				else if (vertexMap.find(face) == vertexMap.end()) {
 					vertexMap.insert(std::make_pair(vertex + "/" + uv + "/" + normal, indexCounter));
@@ -197,28 +189,28 @@ bool MeshResource::ReadOBJFile(const char* path) {
 					uvIndices.push_back(uvIndex[i] - 1);
 					normalIndices.push_back(normalIndex[i] - 1);
 
-					this->indices.push_back(indexCounter++);
+					m_indices.push_back(indexCounter++);
 				}
 			}
 		}
 	}
 	//Vertex indexing
 	for (unsigned int i = 0; i < vertexIndices.size(); i++) {
-		this->vertices.push_back(Vertex(tempVertexPos[vertexIndices[i]], vec3(1.0, 1.0f, 1.0f), tempUvsPos[uvIndices[i]], tempNormalsPos[normalIndices[i]]));
+		m_vertices.push_back(Vertex(tempVertexPos[vertexIndices[i]], vec3(1.0, 1.0f, 1.0f), tempUvsPos[uvIndices[i]], tempNormalsPos[normalIndices[i]]));
 	}
 }
 
 MeshResource MeshResource::CreateOBJMesh() {
 	// Use if the mesh is too large.
 	float scale = 0.035;
-	for (int i = 0; i < vertices.size(); i++) {
-		this->vertices[i].position = this->vertices[i].position * scale;
+	for (int i = 0; i < m_vertices.size(); i++) {
+		m_vertices[i].m_position = m_vertices[i].m_position * scale;
 	}
 
-	unsigned nrOfVertices = this->vertices.size();
-	unsigned nrOfIndices = this->indices.size();
+	unsigned nrOfVertices = m_vertices.size();
+	unsigned nrOfIndices = m_indices.size();
 
-	MeshResource mesh(this->vertices, nrOfVertices, this->indices, nrOfIndices);
+	MeshResource mesh(m_vertices, nrOfVertices, m_indices, nrOfIndices);
 
 	return mesh;
 }
@@ -373,11 +365,11 @@ MeshResource MeshResource::CreateCubeMesh(float width, float height, float depth
 }
 
 void MeshResource::Render(int mode) {
-	glDrawElements(mode, this->indices.size(), GL_UNSIGNED_INT, 0);
+	glDrawElements(mode, m_indices.size(), GL_UNSIGNED_INT, 0);
 }
 
 void MeshResource::Render(Primitive prim) {
-	glDrawElements(GL_TRIANGLES, prim.nrIndices, prim.indexType, (void*)prim.byteOffset);
+	glDrawElements(GL_TRIANGLES, prim.m_nrIndices, prim.m_indexType, (void*)prim.m_byteOffset);
 }
 
 MeshResource MeshResource::CreateSphereMesh() {

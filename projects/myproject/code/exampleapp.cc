@@ -25,8 +25,31 @@ using namespace Input2;
 using json = nlohmann::json;
 using namespace fx;
 
-// TODO
-// CHANGE WORKING DIRECTORY!!!!!!!!
+// Init objects position and/or render multiple in a grid formation.
+// Have not decided yet where to place this function. Probably will make a util header for these kind of things once I create better folder structure.
+// Maybe add functionality to specify the area where the models will be randomly spawned in.
+std::vector<mat4> InitObjectPositions(vec3 pos = { 0,0,0 }, int rows = 1, int columns = 1, vec3 posOffset = { 0,0,0 }) {
+	std::vector<mat4> objectPositions;
+
+	// Calculate object positions in a grid layout
+	for (size_t i = 0; i < rows; i++) {
+		for (size_t j = 0; j < columns; j++) {
+			float posX = pos.x + j * posOffset.x;
+			float posZ = pos.z + i * posOffset.z;
+
+			mat4 obj = mat4(
+				vec4(1.0f, 0.0f, 0.0f, 0.0f),
+				vec4(0.0f, 1.0f, 0.0f, 0.0f),
+				vec4(0.0f, 0.0f, 1.0f, 0.0f),
+				vec4(posX, 0.0f, posZ, 1.0f)
+			);
+
+			objectPositions.push_back(obj);
+		}
+	}
+
+	return objectPositions;
+}
 
 namespace Example
 {
@@ -136,16 +159,16 @@ namespace Example
 		//-------------MESHES-------------
 		// Group 1 - OpenGL
 		for (int i = 0; i < 4; i++) {
-			pointLightCubes[i].mesh = std::make_shared<MeshResource>(MeshResource::CreateCubeMesh(0.1, 0.1, 0.1));
+			pointLightCubes[i].m_mesh = std::make_shared<MeshResource>(MeshResource::CreateCubeMesh(0.1, 0.1, 0.1));
 		}
-		quad.mesh = std::make_shared<MeshResource>(MeshResource::CreateQuadMesh());
-		sphere.mesh = std::make_shared<MeshResource>(MeshResource::CreateSphereMesh());
+		quad.m_mesh = std::make_shared<MeshResource>(MeshResource::CreateQuadMesh());
+		sphere.m_mesh = std::make_shared<MeshResource>(MeshResource::CreateSphereMesh());
 
 		// Group 2 - OBJ
-		swordNode0.mesh->ReadOBJFile("obj/sting_sword/sting_sword.obj");
-		swordNode0.mesh = std::make_shared<MeshResource>(swordNode0.mesh->CreateOBJMesh());
-		swordNode1.mesh->ReadOBJFile("obj/sting_sword/sting_sword.obj");
-		swordNode1.mesh = std::make_shared<MeshResource>(swordNode1.mesh->CreateOBJMesh());
+		swordNode0.m_mesh->ReadOBJFile("obj/sting_sword/sting_sword.obj");
+		swordNode0.m_mesh = std::make_shared<MeshResource>(swordNode0.m_mesh->CreateOBJMesh());
+		swordNode1.m_mesh->ReadOBJFile("obj/sting_sword/sting_sword.obj");
+		swordNode1.m_mesh = std::make_shared<MeshResource>(swordNode1.m_mesh->CreateOBJMesh());
 
 		// Group 3 - GLTF
 		//GLTF avocado = GLTF::LoadGLTF(avocadoPath);
@@ -155,17 +178,17 @@ namespace Example
 		//GLTF tangentTest = GLTF::LoadGLTF(tangentMirrorPath, false);
 
 		// Simply swap model from any of the Group 3 to change model.
-		gltfModel.model = flightHelmet;
+		gltfModel.m_model = flightHelmet;
 
 		//-------------TEXTURES-------------
 		// Group 1 - OpenGL
 		for (int i = 0; i < 4; i++) { // Will not be used in the end
-			pointLightCubes[i].texture->LoadFromFile("texture/glass.jpg");
+			pointLightCubes[i].m_texture->LoadFromFile("texture/glass.jpg");
 		}
 
 		// Group 2 - OBJ
 		for (int i = 0; i < NR_OF_SWORDS; i++) {
-			swordNodeVector[i].texture->LoadFromFile("obj/sting_sword/Sting_Base_Color.png");
+			swordNodeVector[i].m_texture->LoadFromFile("obj/sting_sword/Sting_Base_Color.png");
 		}
 
 		//-------------SHADERS-------------
@@ -180,22 +203,22 @@ namespace Example
 		shaderLightSphere->LoadShaders("shader/vLightSphere.txt", "shader/fLightSphere.txt");
 
 		for (int i = 0; i < 4; i++) {
-			pointLightCubes[i].shader->LoadShaders("shader/cubeLightSource_vs.txt", "shader/cubeLightSource_fs.txt");
+			pointLightCubes[i].m_shader->LoadShaders("shader/cubeLightSource_vs.txt", "shader/cubeLightSource_fs.txt");
 		}
 
-		quad.shader = shaderDirectionalLight;
-		sphere.shader = shaderLightSphere;
+		quad.m_shader = shaderDirectionalLight;
+		sphere.m_shader = shaderLightSphere;
 
 		//-------------MATERIALS-------------
-		// Will load the BlinnPhong shader.
-		//If it is already loaded, it will reference to it instead of loading it again.
-		BlinnPhongMaterial bpLargeSword(swordNode0.shader, 16.0f, vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f));
-		BlinnPhongMaterial bpSmallSword(swordNode1.shader, 16.0f, vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f));
-		BlinnPhongMaterial bpMaterial(gltfModel.shader, 32.0f, vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f), true);
+		// Load the BlinnPhong shader. If already loaded reference to it instead.
+		BlinnPhongMaterial bpLargeSword(swordNode0.m_shader, 16.0f, vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f));
+		BlinnPhongMaterial bpSmallSword(swordNode1.m_shader, 16.0f, vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f));
+		BlinnPhongMaterial bpMaterial(gltfModel.m_shader, 32.0f, vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f), vec3(1.0f, 1.0f, 1.0f), true);
 
 		//-------------LIGHTS-------------
 		LightingResource directionalLight(vec3(-0.2f, -1.0f, -0.3f), vec3(1.0f, 1.0f, 1.0f), 0.35f);
 
+		// Pre-deferred rendering tests
 		//LightingResource pointLight0(vec3(1.0f, 0.5f, 0.0f), vec3(1.0f, 0.0f, 1.0f), 0.012f);
 		//LightingResource pointLight1(vec3(1.0f, 0.5f, -1.0f), vec3(1.0f, 0.0f, 0.0f), 0.015f);
 		//LightingResource pointLight2(vec3(-1.0f, 0.5f, 1.0f), vec3(0.0f, 1.0f, 0.0f), 0.02f);
@@ -204,7 +227,7 @@ namespace Example
 		//Light vectors
 		std::vector<LightingResource> pointLightVector;
 
-		////Push to their vectors
+		// Pre-deferred rendering tests
 		//pointLightVector.push_back(pointLight0);
 		//pointLightVector.push_back(pointLight1);
 		//pointLightVector.push_back(pointLight2);
@@ -216,15 +239,15 @@ namespace Example
 		{
 			LightingResource pointLight;
 			// calculate slightly random offsets
-			float x = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
-			float y = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 4.0);
-			float z = static_cast<float>(((rand() % 100) / 100.0) * 6.0 - 3.0);
-			pointLight.pos = vec3(0, 1, 0); // CURRENTLY HARD-CODED FOR DEBUGGING
+			float x = static_cast<float>((rand() % 100) / 100.0);
+			float y = static_cast<float>(((rand() % 100) / 100.0) * 0.5);
+			float z = static_cast<float>((rand() % 100) / 100.0);
+			pointLight.m_pos = vec3(0, 1, 0);
 			// calculate random color between 0.5 and 1
 			float r = static_cast<float>(((rand() % 100) / 200.0f) + 0.5);
 			float g = static_cast<float>(((rand() % 100) / 200.0f) + 0.5);
 			float b = static_cast<float>(((rand() % 100) / 200.0f) + 0.5);
-			pointLight.color = vec3(r, g, b);
+			pointLight.m_color = vec3(r, g, b);
 
 			pointLightVector.push_back(pointLight);
 		}
@@ -253,141 +276,37 @@ namespace Example
 				// Up
 				if (inputManager->mouse.yCurrentPos < inputManager->mouse.yPrevPos) {
 					rad += rotSpeed;
-					gltfModel.transform = gltfModel.transform * rotationx(rad);
+					gltfModel.m_transform = gltfModel.m_transform * rotationx(rad);
 				}
 				// Down
 				if (inputManager->mouse.yCurrentPos > inputManager->mouse.yPrevPos) {
 					rad -= rotSpeed;
-					gltfModel.transform = gltfModel.transform * rotationx(rad);
+					gltfModel.m_transform = gltfModel.m_transform * rotationx(rad);
 				}
 				// Left
 				if (inputManager->mouse.xCurrentPos < inputManager->mouse.xPrevPos) {
 					rad += rotSpeed;
-					gltfModel.transform = gltfModel.transform * rotationy(rad);
+					gltfModel.m_transform = gltfModel.m_transform * rotationy(rad);
 				}
 				// Right
 				if (inputManager->mouse.xCurrentPos > inputManager->mouse.xPrevPos) {
 					rad -= rotSpeed;
-					gltfModel.transform = gltfModel.transform * rotationy(rad);
+					gltfModel.m_transform = gltfModel.m_transform * rotationy(rad);
 				}
 			}
 			});
 
 		//-------------PLACE IN SCENE-------------
-		//pointLightCubes[0].transform.m[3] = vec4(pointLight0.pos, 1.0f);
+		//pointLightCubes[0].m_transform.m[3] = vec4(pointLight0.pos, 1.0f);
 		//pointLightCubes[1].transform.m[3] = vec4(pointLight1.pos, 1.0f);
 		//pointLightCubes[2].transform.m[3] = vec4(pointLight2.pos, 1.0f);
 		//pointLightCubes[3].transform.m[3] = vec4(pointLight3.pos, 1.0f);
-		swordNode0.transform.m[3] = vec4(-0.7f, 0.0f, 0.0f, 1.0f);
-		swordNode1.transform.m[3] = vec4(1.0f, 0.0f, 0.0f, 1.5f);
+		swordNode0.m_transform.m[3] = vec4(-0.7f, 0.0f, 0.0f, 1.0f);
+		swordNode1.m_transform.m[3] = vec4(1.0f, 0.0f, 0.0f, 1.5f);
 		//gltfModel.transform.m[3] = vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 		// All positions of the objects in Deferred Rendering
-		std::vector<mat4> objectPositions{
-			// Back row
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				 vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				 vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				 vec4(-1.0f, 0.0f, -1.0f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				 vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				 vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				 vec4(-0.5f, 0.0f, -1.0f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				 vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				 vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				 vec4(0.0f, 0.0f, -1.0f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				 vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				 vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				 vec4(0.5f, 0.0f, -1.0f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				 vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				 vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				 vec4(1.0f, 0.0f, -1.0f, 1.0f)},
-
-			// Mid-back row
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(-1.0f, 0.0f, -0.5f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(-0.5f, 0.0f, -0.5f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(0.0f, 0.0f, -0.5f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(0.5f, 0.0f, -0.5f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(1.0f, 0.0f, -0.5f, 1.0f)},
-
-			// Mid-front row
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(-1.0f, 0.0f, 0.0f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(-0.5f, 0.0f, 0.0f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(0.0f, 0.0f, 0.0f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(0.5f, 0.0f, 0.0f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(1.0f, 0.0f, 0.0f, 1.0f)},
-
-			// Front row
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(-1.0f, 0.0f, 0.5f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(-0.5f, 0.0f, 0.5f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(0.0f, 0.0f, 0.5f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(0.5f, 0.0f, 0.5f, 1.0f)},
-
-			mat4{vec4(1.0f, 0.0f, 0.0f, 0.0f),
-				vec4(0.0f, 1.0f, 0.0f, 0.0f),
-				vec4(0.0f, 0.0f, 1.0f, 0.0f),
-				vec4(1.0f, 0.0f, 0.5f, 1.0f)},
-		};
+		std::vector<mat4> objectPositions = InitObjectPositions(vec3{ -1, 0, -1, }, 4, 5, vec3{ 0.5, 0, 0.5 });
 
 		//-------------SETUP G-BUFFER-------------
 		unsigned int gBuffer;
@@ -454,73 +373,72 @@ namespace Example
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			this->window->Update();
 
-			// Process input into movement
+			// Process input
 			{
 				GLfloat movementSpeed = 0.002f;
 				// W-key
 				if (inputManager->keyboard.held[UP]) {
-					gltfModel.transform.m[3].z -= movementSpeed;
+					gltfModel.m_transform.m[3].z -= movementSpeed;
 				}
 				// S-key
 				if (inputManager->keyboard.held[DOWN]) {
-					gltfModel.transform.m[3].z += movementSpeed;
+					gltfModel.m_transform.m[3].z += movementSpeed;
 				}
 				// A-key
 				if (inputManager->keyboard.held[LEFT]) {
-					gltfModel.transform.m[3].x -= movementSpeed;
+					gltfModel.m_transform.m[3].x -= movementSpeed;
 				}
 				// D-key
 				if (inputManager->keyboard.held[RIGHT]) {
-					gltfModel.transform.m[3].x += movementSpeed;
+					gltfModel.m_transform.m[3].x += movementSpeed;
 				}
 				// Q-key
 				if (inputManager->keyboard.held[Q]) {
-					gltfModel.transform.m[3].y -= movementSpeed;
+					gltfModel.m_transform.m[3].y -= movementSpeed;
 				}
 				// E-key
 				if (inputManager->keyboard.held[E]) {
-					gltfModel.transform.m[3].y += movementSpeed;
+					gltfModel.m_transform.m[3].y += movementSpeed;
 				}
 				// Space-key
 				if (inputManager->keyboard.pressed[SPACE]) {
-					if (!moveLightAround) {
-						moveLightAround = true;
-					}
-					else {
-						moveLightAround = false;
-					}
+					moveLightAround = !moveLightAround;
+				}
+				// Esc-key
+				if (inputManager->keyboard.pressed[ESCAPE]) {
+					this->window->Close();
 				}
 			}
 
 			// 1. GEOMETRY PASS
 			glBindFramebuffer(GL_FRAMEBUFFER, gBuffer);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			camera.OrbitScene();
+			camera.OrbitScene(0); // To do: Too tightly coupled logic. Decouple and make a camera.Update() pipeline that takes care of everything.
 			shaderGeometryPass->Run();
-			shaderGeometryPass->SetMat4Uniform("projection", camera.projMatrix);
-			shaderGeometryPass->SetMat4Uniform("view", camera.viewMatrix);
+			shaderGeometryPass->SetMat4Uniform("projection", camera.GetCameraProjMatrix());
+			shaderGeometryPass->SetMat4Uniform("view", camera.GetCameraViewMatrix());
 
 			for (unsigned int i = 0; i < objectPositions.size(); i++) {
 				GLint textureIndex = 0;
 				GLint normalIndex = 1;
-				for (auto const& mesh : gltfModel.model.meshes) {
-					gltfModel.mesh = mesh;
+				for (auto const& mesh : gltfModel.m_model.m_meshes) {
+					gltfModel.m_mesh = mesh;
 
 					glActiveTexture(GL_TEXTURE0);
-					glBindTexture(GL_TEXTURE_2D, gltfModel.model.textures[textureIndex]->textureID);
+					glBindTexture(GL_TEXTURE_2D, gltfModel.m_model.m_textures[textureIndex]->m_textureID);
 					shaderGeometryPass->SetSampler2DUniform("texture_diffuse1", 0);
 
-					if (gltfModel.model.hasNormals) {
+					if (gltfModel.m_model.m_hasNormals) {
 						glActiveTexture(GL_TEXTURE0 + 1);
-						glBindTexture(GL_TEXTURE_2D, gltfModel.model.textures[normalIndex]->textureID);
+						glBindTexture(GL_TEXTURE_2D, gltfModel.m_model.m_textures[normalIndex]->m_textureID);
 						shaderGeometryPass->SetSampler2DUniform("texture_specular1", 1);
-						if (gltfModel.model.hasTangents) {
+						if (gltfModel.m_model.m_hasTangents) {
 							shaderGeometryPass->SetIntUniform("hasTangents", true);
 						}
 					}
 
-					gltfModel.transform = objectPositions[i];
-					gltfModel.Draw(this->window, shaderGeometryPass);
+					gltfModel.m_transform = objectPositions[i];
+					gltfModel.Draw(this->window, shaderGeometryPass, GL_TRIANGLES, true);
 					textureIndex += 2;
 					normalIndex += 2;
 				}
@@ -538,15 +456,15 @@ namespace Example
 			glBindTexture(GL_TEXTURE_2D, gAlbedoSpec);
 
 			// Send light relevant uniforms
-			shaderDirectionalLight->SetVec3Uniform("light.direction", directionalLight.pos);
-			shaderDirectionalLight->SetVec3Uniform("light.color", directionalLight.color);
-			shaderDirectionalLight->SetFloatUniform("light.intensity", directionalLight.intensity);
-			shaderDirectionalLight->SetVec3Uniform("viewPos", camera.cameraPos);
+			shaderDirectionalLight->SetVec3Uniform("light.direction", directionalLight.m_pos);
+			shaderDirectionalLight->SetVec3Uniform("light.color", directionalLight.m_color);
+			shaderDirectionalLight->SetFloatUniform("light.intensity", directionalLight.m_intensity);
+			shaderDirectionalLight->SetVec3Uniform("viewPos", camera.GetCameraPos());
 
-			shaderDirectionalLight->SetFloatUniform("material.shininess", bpMaterial.shininess);
-			shaderDirectionalLight->SetVec3Uniform("material.ambient", bpMaterial.ambient);
-			shaderDirectionalLight->SetVec3Uniform("material.diffuse", bpMaterial.diffuse);
-			shaderDirectionalLight->SetVec3Uniform("material.specular", bpMaterial.specular);
+			shaderDirectionalLight->SetFloatUniform("material.shininess", bpMaterial.m_shininess);
+			shaderDirectionalLight->SetVec3Uniform("material.ambient", bpMaterial.m_ambient);
+			shaderDirectionalLight->SetVec3Uniform("material.diffuse", bpMaterial.m_diffuse);
+			shaderDirectionalLight->SetVec3Uniform("material.specular", bpMaterial.m_specular);
 
 			//// 2.5. LIGHT PASS - Point Lights
 			// ERROR: Overrides direct light
@@ -565,22 +483,22 @@ namespace Example
 			const float quadratic = 1.8f;
 			for (unsigned int i = 0; i < NR_OF_POINT_LIGHTS; i++) {
 				std::string number = std::to_string(i);
-				shaderPointLight->SetVec3Uniform("lights[" + number + "].pos", pointLightVector[i].pos);
-				shaderPointLight->SetVec3Uniform("lights[" + number + "].color", pointLightVector[i].color);
+				shaderPointLight->SetVec3Uniform("lights[" + number + "].pos", pointLightVector[i].m_pos);
+				shaderPointLight->SetVec3Uniform("lights[" + number + "].color", pointLightVector[i].m_color);
 				shaderPointLight->SetFloatUniform("lights[" + number + "].intensity", 0.03);
 				shaderPointLight->SetFloatUniform("lights[" + number + "].constant", constant);
 				shaderPointLight->SetFloatUniform("lights[" + number + "].linear", linear);
 				shaderPointLight->SetFloatUniform("lights[" + number + "].quadratic", quadratic);
-				shaderPointLight->SetVec3Uniform("viewPos", camera.cameraPos);
+				shaderPointLight->SetVec3Uniform("viewPos", camera.GetCameraPos());
 
-				shaderPointLight->SetFloatUniform("material.shininess", bpMaterial.shininess);
-				shaderPointLight->SetVec3Uniform("material.ambient", bpMaterial.ambient);
-				shaderPointLight->SetVec3Uniform("material.diffuse", bpMaterial.diffuse);
-				shaderPointLight->SetVec3Uniform("material.specular", bpMaterial.specular);
+				shaderPointLight->SetFloatUniform("material.shininess", bpMaterial.m_shininess);
+				shaderPointLight->SetVec3Uniform("material.ambient", bpMaterial.m_ambient);
+				shaderPointLight->SetVec3Uniform("material.diffuse", bpMaterial.m_diffuse);
+				shaderPointLight->SetVec3Uniform("material.specular", bpMaterial.m_specular);
 			}
 
 			// Render quad for full-screen light pass
-			quad.Draw(this->window, GL_TRIANGLES);
+			quad.Draw(this->window);
 
 			// Copy content of geometry's depth buffer to default framebuffer's depth buffer
 			// ERROR: Incorrect depth
@@ -591,17 +509,17 @@ namespace Example
 
 			// 3. Render light spheres on top of scene
 			shaderLightSphere->Run();
-			shaderLightSphere->SetMat4Uniform("projection", camera.projMatrix);
-			shaderLightSphere->SetMat4Uniform("view", camera.viewMatrix);
+			shaderLightSphere->SetMat4Uniform("projection", camera.GetCameraProjMatrix());
+			shaderLightSphere->SetMat4Uniform("view", camera.GetCameraViewMatrix());
 			for (unsigned int i = 0; i < NR_OF_POINT_LIGHTS; i++) {
-				sphere.transform.m[3] = vec4(pointLightVector[i].pos, 1.0);
-				shaderLightSphere->SetVec3Uniform("lightColor", pointLightVector[i].color);
-				sphere.Draw(this->window, GL_POLYGON);
+				sphere.m_transform.m[3] = vec4(pointLightVector[i].m_pos, 1.0);
+				shaderLightSphere->SetVec3Uniform("lightColor", pointLightVector[i].m_color);
+				sphere.Draw(this->window);
 			}
 
 
 
-			// ASSIGNMENT - GLTF & NORMALMAP
+			// GLTF & Normalmap tests (to be removed)
 			//// Camera & UI
 			//mat4 projViewMatrix = camera.OrbitScene();
 			//grid.Draw(&projViewMatrix[0][0]);
@@ -632,19 +550,23 @@ namespace Example
 			//}
 
 			//// Point Lights
-			////The point light which orbits around the sword. Play/pause by pressing SPACE
-			//if (moveLightAround) {
-			//	pointLightVector[0].OrbitAnimation();
-			//	pointLightCubes[0].OrbitAnimation();
-			//}
+			////The point light which orbits around the scene. Play/pause by pressing SPACE
+			if (moveLightAround) {
+				for (auto& light : pointLightVector) {
+					light.OrbitAnimation();
+				}
+			}
 
+			gltfModel.OrbitAnimation();
+
+			//// Pre-deferred rendering tests
 			//// Draw cubes representing Point Lights
 			//for (int i = 0; i < NR_OF_POINT_LIGHTS; i++) {
 			//	pointLightCubes[i].shader->Run();
 			//	glActiveTexture(GL_TEXTURE0);
 			//	glBindTexture(GL_TEXTURE_2D, pointLightCubes[i].texture->textureID);
-			//	pointLightCubes[i].shader->SetMat4Uniform("view", camera.viewMatrix);
-			//	pointLightCubes[i].shader->SetMat4Uniform("projection", camera.projMatrix);
+			//	pointLightCubes[i].shader->SetMat4Uniform("view", camera.m_viewMatrix);
+			//	pointLightCubes[i].shader->SetMat4Uniform("projection", camera.m_projMatrix);
 			//	pointLightCubes[i].Draw(this->window, GL_TRIANGLES);
 			//}
 

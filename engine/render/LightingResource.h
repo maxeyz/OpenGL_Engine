@@ -10,21 +10,17 @@
 #include "render/ShaderResource.h"
 
 class LightingResource {
-public: 
-	vec3 pos;
-	vec3 color;
-	GLfloat intensity;
+public:
+	vec3 m_pos;
+	vec3 m_color;
+	GLfloat m_intensity;
 
-	LightingResource();
-	LightingResource(vec3 pos, vec3 color, GLfloat intensity);
-
-	void OrbitAnimation() {
-		float radius = 1.0f;
-		float speed = 0.8;
-		static float time = 0.0f;
-		time += 0.0002f;
-		
-		this->pos.z = sin(time * speed) * radius;
-		this->pos.x = cos(time * speed) * radius;
+	LightingResource() : m_pos() {};
+	LightingResource(vec3 pos, vec3 color, GLfloat intensity) {
+		m_pos = pos;
+		m_color = color;
+		m_intensity = intensity;
 	}
+
+	void OrbitAnimation();
 };

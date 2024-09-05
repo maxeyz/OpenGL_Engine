@@ -8,20 +8,12 @@
 using namespace fx;
 namespace fs = std::experimental::filesystem;
 
-GLTF::GLTF() {
-    // Empty
-}
-
-GLTF::~GLTF() {
-    // Empty
-}
-
 int GLTF::GetSlotNumber(std::string attrib) {
     if (attrib == "POSITION") { return 0; }
     if (attrib == "COLOR_0") { return 1; }
     if (attrib == "TEXCOORD_0") { return 2; }
     if (attrib == "NORMAL") { return 3; }
-    if (attrib == "TANGENT") { return 4; } 
+    if (attrib == "TANGENT") { return 4; }
     else {
         std::cout << "Missing attribute slot" << std::endl;
         return -1;
@@ -31,7 +23,7 @@ int GLTF::GetSlotNumber(std::string attrib) {
 GLTF GLTF::LoadGLTF(const char* path, bool flipUV) {
     // Attempt to read the .gltf file
     GLTF model;
-    try { 
+    try {
         gltf::LoadFromText(path);
     }
     catch (const std::exception& e) {
@@ -62,9 +54,9 @@ GLTF GLTF::LoadGLTF(const char* path, bool flipUV) {
         t.LoadFromFile(texturePath, flipUV);
         std::cout << "Loaded: " << texturePath << std::endl;
 
-        model.textures.push_back(std::make_shared<TextureResource>(t));
+        model.m_textures.push_back(std::make_shared<TextureResource>(t));
     };
-    
+
     for (auto const& material : doc.materials) {
         int textureIndex = material.pbrMetallicRoughness.baseColorTexture.index;
         int normalIndex = material.normalTexture.index;
@@ -73,21 +65,21 @@ GLTF GLTF::LoadGLTF(const char* path, bool flipUV) {
         }
         if (normalIndex != -1) {
             LoadTexture(textureIndex, doc.textures[normalIndex], flipUV);
-            model.hasNormals = true;
+            model.m_hasNormals = true;
         }
     }
 
     // MESHES
     // Generate the buffers
-    model.buffers.resize(doc.bufferViews.size());
-    glGenBuffers(doc.bufferViews.size(), model.buffers.data());
+    model.m_buffers.resize(doc.bufferViews.size());
+    glGenBuffers(doc.bufferViews.size(), model.m_buffers.data());
 
     // Load the data from the bufferViews into our buffers
     for (unsigned i = 0; i < doc.bufferViews.size(); i++) {
         auto const& bufferView = doc.bufferViews[i];
-        
+
         GLenum target = (GLenum)bufferView.target == 0 ? GL_ELEMENT_ARRAY_BUFFER : (GLenum)bufferView.target;
-        glBindBuffer(target, model.buffers[i]);
+        glBindBuffer(target, model.m_buffers[i]);
         glBufferData(target, bufferView.byteLength, (byte*)(doc.buffers[bufferView.buffer].data.data()) + bufferView.byteOffset, GL_STATIC_DRAW);
     }
 
@@ -102,49 +94,49 @@ GLTF GLTF::LoadGLTF(const char* path, bool flipUV) {
                 textureResource.LoadFromMemory(data);
             }
             MeshResource::Primitive prim;
-            glGenVertexArrays(1, &prim.VAO);
-            glBindVertexArray(prim.VAO);
+            glGenVertexArrays(1, &prim.m_VAO);
+            glBindVertexArray(prim.m_VAO);
             for (auto const& attribute : primitive.attributes) {
                 auto const& accessor = doc.accessors[attribute.second];
 
                 MeshResource::Attribute attrib;
-                attrib.byteOffset = accessor.byteOffset;
-                attrib.stride = doc.bufferViews[accessor.bufferView].byteStride;
-                attrib.normalized = accessor.normalized;
-                attrib.slot = GetSlotNumber(attribute.first);
-                attrib.type = (GLenum)accessor.componentType;
+                attrib.m_byteOffset = accessor.byteOffset;
+                attrib.m_stride = doc.bufferViews[accessor.bufferView].byteStride;
+                attrib.m_normalized = accessor.normalized;
+                attrib.m_slot = GetSlotNumber(attribute.first);
+                attrib.m_type = (GLenum)accessor.componentType;
 
                 if (accessor.type == gltf::Accessor::Type::Scalar) {
-                    attrib.components = 1;
+                    attrib.m_components = 1;
                 }
                 else if (
                     accessor.type == gltf::Accessor::Type::Vec2 ||
                     accessor.type == gltf::Accessor::Type::Vec3 ||
                     accessor.type == gltf::Accessor::Type::Vec4) {
-                    attrib.components = (GLint)accessor.type;
+                    attrib.m_components = (GLint)accessor.type;
                 }
 
                 if (attribute.first == "TANGENT") {
-                    model.hasTangents = true;
+                    model.m_hasTangents = true;
                 }
 
                 GLenum target = (GLenum)doc.bufferViews[accessor.bufferView].target == 0 ? GL_ARRAY_BUFFER : (GLenum)doc.bufferViews[accessor.bufferView].target;
-                glBindBuffer(target, model.buffers[accessor.bufferView]);
-                glEnableVertexArrayAttrib(prim.VAO, attrib.slot);
-                glVertexAttribPointer(attrib.slot, attrib.components, attrib.type, attrib.normalized, attrib.stride, (void*)(intptr_t)attrib.byteOffset);
+                glBindBuffer(target, model.m_buffers[accessor.bufferView]);
+                glEnableVertexArrayAttrib(prim.m_VAO, attrib.m_slot);
+                glVertexAttribPointer(attrib.m_slot, attrib.m_components, attrib.m_type, attrib.m_normalized, attrib.m_stride, (void*)(intptr_t)attrib.m_byteOffset);
             }
             // Setup EBO
             auto const& accessor = doc.accessors[primitive.indices];
 
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.buffers[accessor.bufferView]);
-            prim.nrIndices = accessor.count;
-            prim.byteOffset = accessor.byteOffset;
-            prim.indexType = (GLenum)accessor.componentType;
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, model.m_buffers[accessor.bufferView]);
+            prim.m_nrIndices = accessor.count;
+            prim.m_byteOffset = accessor.byteOffset;
+            prim.m_indexType = (GLenum)accessor.componentType;
 
             glBindVertexArray(0);
-            meshResource.primitives.push_back(std::move(prim));
+            meshResource.m_primitives.push_back(std::move(prim));
         }
-        model.meshes.push_back(std::move(std::make_shared<MeshResource>(meshResource)));
+        model.m_meshes.push_back(std::move(std::make_shared<MeshResource>(meshResource)));
     }
 
     return model;

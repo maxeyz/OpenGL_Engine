@@ -1,14 +1,6 @@
 #include "config.h"
 #include "render/ShaderResource.h"
 
-ShaderResource::ShaderResource() {
-    // Empty
-}
-
-ShaderResource::~ShaderResource() {
-    // Empty
-}
-
 void ShaderResource::LoadShaders(const char* vertexPath, const char* fragmentPath) {
     std::string vertexCode;
     std::string fragmentCode;
@@ -68,15 +60,15 @@ void ShaderResource::LoadShaders(const char* vertexPath, const char* fragmentPat
     };
 
     // Link shaders
-    this->program = glCreateProgram();
-    glAttachShader(this->program, vertex);
-    glAttachShader(this->program, fragment);
-    glLinkProgram(this->program);
+    m_program = glCreateProgram();
+    glAttachShader(m_program, vertex);
+    glAttachShader(m_program, fragment);
+    glLinkProgram(m_program);
 
-    glGetProgramiv(this->program, GL_LINK_STATUS, &success);
+    glGetProgramiv(m_program, GL_LINK_STATUS, &success);
     if (!success)
     {
-        glGetProgramInfoLog(this->program, 512, NULL, infoLog);
+        glGetProgramInfoLog(m_program, 512, NULL, infoLog);
         std::cout << "ERROR: Failed linking shaders.\n" << infoLog << std::endl;
     }
 
@@ -86,16 +78,16 @@ void ShaderResource::LoadShaders(const char* vertexPath, const char* fragmentPat
 
 void ShaderResource::SendAllLightUniformsToShader(ShaderResource shader, LightingResource directionalLight, std::vector<LightingResource> pointLight) {
     // Directional light uniforms
-	shader.SetVec3Uniform("directionalLight.direction", directionalLight.pos); // Direction of light, not pos of light source.
-    shader.SetVec3Uniform("directionalLight.color", directionalLight.color);
-    shader.SetFloatUniform("directionalLight.intensity", directionalLight.intensity);
+	shader.SetVec3Uniform("directionalLight.direction", directionalLight.m_pos); // Direction of light, not pos of light source.
+    shader.SetVec3Uniform("directionalLight.color", directionalLight.m_color);
+    shader.SetFloatUniform("directionalLight.intensity", directionalLight.m_intensity);
 
 	// Point light uniforms
 	for (int i = 0; i < pointLight.size(); i++) {
 		std::string number = std::to_string(i);
-        shader.SetVec3Uniform("pointLight[" + number + "].pos", pointLight[i].pos);
-        shader.SetVec3Uniform("pointLight[" + number + "].color", pointLight[i].color);
-        shader.SetFloatUniform("pointLight[" + number + "].intensity", pointLight[i].intensity);
+        shader.SetVec3Uniform("pointLight[" + number + "].pos", pointLight[i].m_pos);
+        shader.SetVec3Uniform("pointLight[" + number + "].color", pointLight[i].m_color);
+        shader.SetFloatUniform("pointLight[" + number + "].intensity", pointLight[i].m_intensity);
         shader.SetFloatUniform("pointLight[" + number + "].constant", 1.0f);
         shader.SetFloatUniform("pointLight[" + number + "].linear", 0.7f);
         shader.SetFloatUniform("pointLight[" + number + "].quadratic", 1.8f);
@@ -103,29 +95,29 @@ void ShaderResource::SendAllLightUniformsToShader(ShaderResource shader, Lightin
 }
 
 void ShaderResource::Run() {
-    glUseProgram(this->program);
+    glUseProgram(m_program);
 }
 
 void ShaderResource::SetMat4Uniform(const std::string& name, mat4 mat) const {
-    glUniformMatrix4fv(glGetUniformLocation(this->program, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(m_program, name.c_str()), 1, GL_FALSE, &mat[0][0]);
 }
 
 void ShaderResource::SetVec4Uniform(const std::string& name, vec4 vec) const {
-    glUniform4f(glGetUniformLocation(this->program, name.c_str()), vec[0], vec[1], vec[2], vec[3]);
+    glUniform4f(glGetUniformLocation(m_program, name.c_str()), vec[0], vec[1], vec[2], vec[3]);
 }
 
 void ShaderResource::SetVec3Uniform(const std::string& name, vec3 vec) const {
-    glUniform3f(glGetUniformLocation(this->program, name.c_str()), vec[0], vec[1], vec[2]);
+    glUniform3f(glGetUniformLocation(m_program, name.c_str()), vec[0], vec[1], vec[2]);
 }
 
 void ShaderResource::SetFloatUniform(const std::string& name, GLfloat val) const {
-    glUniform1f(glGetUniformLocation(this->program, name.c_str()), val);
+    glUniform1f(glGetUniformLocation(m_program, name.c_str()), val);
 }
 
 void ShaderResource::SetIntUniform(const std::string& name, GLfloat val) const {
-    glUniform1i(glGetUniformLocation(this->program, name.c_str()), val);
+    glUniform1i(glGetUniformLocation(m_program, name.c_str()), val);
 }
 
 void ShaderResource::SetSampler2DUniform(const std::string& name, GLint textureNr) const {
-    glUniform1i(glGetUniformLocation(this->program, name.c_str()), textureNr);
+    glUniform1i(glGetUniformLocation(m_program, name.c_str()), textureNr);
 }

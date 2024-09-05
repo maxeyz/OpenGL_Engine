@@ -1,17 +1,9 @@
 #include "config.h"
 #include "render/Materials.h"
 
-Material::Material() {
-	
-}
-
 void Material::Apply(std::shared_ptr<ShaderResource> shader, std::shared_ptr<TextureResource> texture, GLint textureSlot,
 	LightingResource directionalLight, std::vector<LightingResource> pointLight, Camera camera) {
 
-}
-
-BlinnPhongMaterial::BlinnPhongMaterial() {
-	// Empty
 }
 
 BlinnPhongMaterial::BlinnPhongMaterial(std::shared_ptr<ShaderResource>& shader, float shininess, vec3 ambient,
@@ -26,7 +18,7 @@ BlinnPhongMaterial::BlinnPhongMaterial(std::shared_ptr<ShaderResource>& shader, 
 		bpShader = shader;
 		loaded = true;
 	}
-	else if(loaded && !hasTangents) {
+	else if (loaded && !hasTangents) {
 		shader = bpShader;
 	}
 	else if (!loadedNormalMap && hasTangents) {
@@ -38,10 +30,10 @@ BlinnPhongMaterial::BlinnPhongMaterial(std::shared_ptr<ShaderResource>& shader, 
 		shader = bpNormalmapShader;
 	}
 
-	this->shininess = shininess;
-	this->ambient = ambient;
-	this->diffuse = diffuse;
-	this->specular = specular;
+	m_shininess = shininess;
+	m_ambient = ambient;
+	m_diffuse = diffuse;
+	m_specular = specular;
 }
 
 void BlinnPhongMaterial::Apply(std::shared_ptr<ShaderResource> shader, std::shared_ptr<TextureResource> texture, GLint textureSlot,
@@ -49,40 +41,40 @@ void BlinnPhongMaterial::Apply(std::shared_ptr<ShaderResource> shader, std::shar
 	shader->Run();
 
 	// Camera uniforms
-	shader->SetMat4Uniform("view", camera.viewMatrix);
-	shader->SetMat4Uniform("projection", camera.projMatrix);
-	shader->SetVec3Uniform("viewPos", camera.cameraPos);
+	shader->SetMat4Uniform("view", camera.GetCameraViewMatrix());
+	shader->SetMat4Uniform("projection", camera.GetCameraProjMatrix());
+	shader->SetVec3Uniform("viewPos", camera.GetCameraPos());
 
 	// Set texture
-	switch(textureSlot) {
+	switch (textureSlot) {
 	case 0:
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture->textureID);
+		glBindTexture(GL_TEXTURE_2D, texture->m_textureID);
 		shader->SetSampler2DUniform("texture0", 0);
 		break;
 	case 1:
 		glActiveTexture(GL_TEXTURE0 + 1);
-		glBindTexture(GL_TEXTURE_2D, texture->textureID);
+		glBindTexture(GL_TEXTURE_2D, texture->m_textureID);
 		shader->SetSampler2DUniform("normalMap", 1);
 		break;
 	}
 
-	shader->SetFloatUniform("material.shininess", this->shininess);
-	shader->SetVec3Uniform("material.ambient", this->ambient);
-	shader->SetVec3Uniform("material.diffuse", this->diffuse);
-	shader->SetVec3Uniform("material.specular", this->specular);
+	shader->SetFloatUniform("material.shininess", m_shininess);
+	shader->SetVec3Uniform("material.ambient", m_ambient);
+	shader->SetVec3Uniform("material.diffuse", m_diffuse);
+	shader->SetVec3Uniform("material.specular", m_specular);
 
 	// Directional light uniforms
-	shader->SetVec3Uniform("directionalLight.direction", directionalLight.pos); // Direction of light, not pos of light source.
-	shader->SetVec3Uniform("directionalLight.color", directionalLight.color);
-	shader->SetFloatUniform("directionalLight.intensity", directionalLight.intensity);
+	shader->SetVec3Uniform("directionalLight.direction", directionalLight.m_pos); // Direction of light, not pos of light source.
+	shader->SetVec3Uniform("directionalLight.color", directionalLight.m_color);
+	shader->SetFloatUniform("directionalLight.intensity", directionalLight.m_intensity);
 
 	// Point light uniforms
 	for (int i = 0; i < pointLight.size(); i++) {
 		std::string number = std::to_string(i);
-		shader->SetVec3Uniform("pointLight[" + number + "].pos", pointLight[i].pos);
-		shader->SetVec3Uniform("pointLight[" + number + "].color", pointLight[i].color);
-		shader->SetFloatUniform("pointLight[" + number + "].intensity", pointLight[i].intensity);
+		shader->SetVec3Uniform("pointLight[" + number + "].pos", pointLight[i].m_pos);
+		shader->SetVec3Uniform("pointLight[" + number + "].color", pointLight[i].m_color);
+		shader->SetFloatUniform("pointLight[" + number + "].intensity", pointLight[i].m_intensity);
 		shader->SetFloatUniform("pointLight[" + number + "].constant", 1.0f);
 		shader->SetFloatUniform("pointLight[" + number + "].linear", 0.7f);
 		shader->SetFloatUniform("pointLight[" + number + "].quadratic", 1.8f);

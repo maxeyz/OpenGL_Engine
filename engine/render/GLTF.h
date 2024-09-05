@@ -13,14 +13,14 @@ using json = nlohmann::json;
 
 class GLTF {
 public:
-	std::vector<std::shared_ptr<MeshResource>> meshes;
-	std::vector<std::shared_ptr<TextureResource>> textures;
-	std::vector<GLuint> buffers;
-	bool hasNormals = false;
-	bool hasTangents = false;
+	bool m_hasNormals = false;
+	bool m_hasTangents = false;
+	std::vector<std::shared_ptr<MeshResource>> m_meshes;
+	std::vector<std::shared_ptr<TextureResource>> m_textures;
+	std::vector<GLuint> m_buffers;
 
-	GLTF();
-	~GLTF();
+	GLTF() {};
+	~GLTF() {};
 
 	static GLTF LoadGLTF(const char* path, bool flipUV = true);
 	static int GetSlotNumber(std::string attrib);

@@ -2,7 +2,7 @@
 # gscept laboration environment
 #--------------------------------------------------------------------------
 cmake_policy(SET CMP0048 NEW) # set policy for older versions
-PROJECT(gscept_lab_env VERSION 1.0)
+PROJECT(opengl_game_engine VERSION 1.0)
 CMAKE_MINIMUM_REQUIRED(VERSION 3.2)
 
 OPTION(CI_MODE "Run in CI mode" OFF) # Disabled by default
@@ -34,7 +34,7 @@ ELSE()
     SET(OPENGL_LIBS GL X11 Xxf86vm pthread Xrandr Xi Xinerama Xcursor)
 ENDIF()
 
-SET(GSCEPT_LAB_ENV_ROOT ${CMAKE_CURRENT_DIR})
+SET(opengl_game_engine_ROOT ${CMAKE_CURRENT_DIR})
 
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY $<$<CONFIG:Debug>:${CMAKE_SOURCE_DIR}/bin>)
 

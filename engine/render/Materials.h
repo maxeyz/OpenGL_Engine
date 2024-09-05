@@ -10,20 +10,20 @@
 
 class Material {
 public:
-	GLfloat shininess;
-	vec3 ambient;
-	vec3 diffuse;
-	vec3 specular;
+	GLfloat m_shininess;
+	vec3 m_ambient;
+	vec3 m_diffuse;
+	vec3 m_specular;
 
 	virtual void Apply(std::shared_ptr<ShaderResource> shader, std::shared_ptr<TextureResource> texture, GLint textureSlot,
 	LightingResource directionalLight, std::vector<LightingResource> pointLight, Camera camera);
 
-	Material();
+	Material() {};
 };
 
 class BlinnPhongMaterial : public Material {
 public:
-	BlinnPhongMaterial();
+	BlinnPhongMaterial() {};
 	BlinnPhongMaterial(std::shared_ptr<ShaderResource>& shader, float shininess, vec3 ambient, vec3 diffuse, vec3 specular, bool hasTangents = false);
 	void Apply(std::shared_ptr<ShaderResource> shader, std::shared_ptr<TextureResource> texture, GLint textureSlot, 
 	LightingResource directionalLight, std::vector<LightingResource> pointLight, Camera camera);
